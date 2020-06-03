@@ -102,7 +102,7 @@ def train_discriminator(discriminator, dis_opt, real_data_samples, generator, or
     val_inp, val_target = helpers.prepare_discriminator_data(pos_val, neg_val, gpu=CUDA)
 
     for d_step in range(d_steps):
-        s = helpers.batchwise_sample(generator, POS_NEG_SAMPLES, BATCH_SIZE)
+        s = helpers.batchwise_sample(generator, POS_NEG_SAMPLES, BATCH_SIZE).to(dtype=torch.int)
         dis_inp, dis_target = helpers.prepare_discriminator_data(real_data_samples, s, gpu=CUDA)
         for epoch in range(epochs):
             print('d-step %d epoch %d : ' % (d_step + 1, epoch + 1), end='')
@@ -152,7 +152,7 @@ if __name__ == '__main__':
     labeled, unlabeled, test, vocab = helpers.init_dataset(LABELED_NUM)
     VOCAB_SIZE = len(vocab)
     oracle = generator.Generator(GEN_EMBEDDING_DIM, GEN_HIDDEN_DIM, VOCAB_SIZE, MAX_SEQ_LEN, gpu=CUDA, oracle_init=True)
-    oracle_samples = unlabeled.tensors[0].type(torch.int)
+    oracle_samples = unlabeled.tensors[0].to(dtype=torch.int)
     POS_NEG_SAMPLES = len(oracle_samples)
     #oracle.load_state_dict(torch.load(oracle_state_dict_path))
     #oracle_samples = torch.load(oracle_samples_path).type(torch.LongTensor)
