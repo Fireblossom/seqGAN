@@ -1,6 +1,15 @@
 import torch
 from torch.autograd import Variable
 from math import ceil
+from torch.utils.data import TensorDataset
+from torchtext.datasets.text_classification import _create_data_from_iterator, _csv_iterator, TextClassificationDataset
+from torchtext.vocab import build_vocab_from_iterator
+from torchtext.vocab import Vocab
+from torchtext.utils import download_from_url, extract_archive, unicode_csv_reader
+from torchtext.data.utils import ngrams_iterator
+from torchtext.data.utils import get_tokenizer
+import numpy as np
+
 
 def prepare_generator_batch(samples, start_letter=0, gpu=False):
     """
@@ -85,3 +94,60 @@ def batchwise_oracle_nll(gen, oracle, num_samples, batch_size, max_seq_len, star
         oracle_nll += oracle_loss.data.item()
 
     return oracle_nll/(num_samples/batch_size)
+
+def _setup_datasets(dataset_name, root='.data', ngrams=1, vocab=None, include_unk=False):
+    #dataset_tar = download_from_url(URLS[dataset_name], root=root)
+    extracted_files = extract_archive('.data/ag_news_csv.tar.gz')
+
+    for fname in extracted_files:
+        if fname.endswith('train.csv'):
+            train_csv_path = fname
+        if fname.endswith('test.csv'):
+            test_csv_path = fname
+
+    if vocab is None:
+        print('Building Vocab based on {}'.format(train_csv_path))
+        vocab = build_vocab_from_iterator(_csv_iterator(train_csv_path, ngrams))
+    else:
+        if not isinstance(vocab, Vocab):
+            raise TypeError("Passed vocabulary is not of type Vocab")
+    print('Vocab has {} entries'.format(len(vocab)))
+    print('Creating training data')
+    train_data, train_labels = _create_data_from_iterator(
+        vocab, _csv_iterator(train_csv_path, ngrams, yield_cls=True), include_unk)
+    print('Creating testing data')
+    test_data, test_labels = _create_data_from_iterator(
+        vocab, _csv_iterator(test_csv_path, ngrams, yield_cls=True), include_unk)
+    if len(train_labels ^ test_labels) > 0:
+        raise ValueError("Training and test labels don't match")
+    return (TextClassificationDataset(vocab, train_data, train_labels),
+            TextClassificationDataset(vocab, test_data, test_labels), vocab)
+
+
+def init_dataset(labeled_num):
+    from main import CLASS_NUM
+    raw_dataset, test_dataset, vocab = _setup_datasets('.data')
+    class_tot = [0] * CLASS_NUM
+    label_data = []
+    labels = []
+    tot = 0
+    perm = np.random.permutation(raw_dataset.__len__())
+    unlabel = []
+    for i in range(raw_dataset.__len__()):
+        label, datum = raw_dataset.__getitem__(perm[i])
+        d = datum.numpy()
+        if len(d) < 210:
+            d = np.pad(d, (0, 210-len(d)), 'constant', constant_values=(0, 1))
+        else:
+            print(len(d))
+        if class_tot[label] < labeled_num:
+            label_data.append(d)
+            labels.append(label)
+            class_tot[label] += 1
+            tot += 1
+        if tot >= CLASS_NUM * labeled_num:
+            unlabel.append(d)
+    fake_label = np.zeros(len(unlabel))
+    return TensorDataset(torch.IntTensor(np.array(label_data)), torch.LongTensor(np.array(labels))), \
+           TensorDataset(torch.IntTensor(np.array(unlabel)), torch.LongTensor(np.array(fake_label))), \
+           test_dataset, vocab

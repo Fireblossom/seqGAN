@@ -32,12 +32,12 @@ class Discriminator(nn.Module):
         emb = emb.permute(1, 0, 2)                                 # seq_len x batch_size x embedding_dim
         _, hidden = self.gru(emb, hidden)                          # 4 x batch_size x hidden_dim
         hidden = hidden.permute(1, 0, 2).contiguous()              # batch_size x 4 x hidden_dim
-        out = self.gru2hidden(hidden.view(-1, 4*self.hidden_dim))  # batch_size x 4*hidden_dim
-        out = torch.tanh(out)
-        out = self.dropout_linear(out)
-        out = self.hidden2out(out)                                 # batch_size x 1
+        feature = self.gru2hidden(hidden.view(-1, 4*self.hidden_dim))  # batch_size x 4*hidden_dim
+        feature = torch.tanh(feature)
+        feature = self.dropout_linear(feature)
+        out = self.hidden2out(feature)                                 # batch_size x 1
         out = torch.sigmoid(out)
-        return out
+        return out, feature
 
     def batchClassify(self, inp):
         """
@@ -52,7 +52,7 @@ class Discriminator(nn.Module):
 
         h = self.init_hidden(inp.size()[0])
         out = self.forward(inp, h)
-        return out.view(-1)
+        return out[0].view(-1), out[1]
 
     def batchBCELoss(self, inp, target):
         """
@@ -65,6 +65,20 @@ class Discriminator(nn.Module):
 
         loss_fn = nn.BCELoss()
         h = self.init_hidden(inp.size()[0])
-        out = self.forward(inp, h)
+        out = self.forward(inp, h)[0]
         return loss_fn(out, target)
 
+
+class Classifier(nn.Module):
+    def __init__(self, feature_dim, class_num, gpu=False):
+        super(Classifier, self).__init__()
+        self.feature_dim = feature_dim
+        self.class_num = class_num
+        self.gpu = gpu
+
+        self.feature2class = nn.Linear(feature_dim, class_num)
+
+    def forward(self, feature):
+        c = self.feature2class(feature)
+        c = torch.softmax(c)
+        return c
