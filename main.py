@@ -10,8 +10,6 @@ import generator
 import discriminator
 import helpers
 
-from torch.autograd import Variable
-
 
 CUDA = True and torch.cuda.is_available()
 VOCAB_SIZE = 5000
