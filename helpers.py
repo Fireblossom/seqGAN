@@ -136,8 +136,10 @@ def init_dataset(labeled_num):
     for i in range(raw_dataset.__len__()):
         label, datum = raw_dataset.__getitem__(perm[i])
         d = datum.numpy()
-        if len(d) < 210:
-            d = np.pad(d, (0, 210-len(d)), 'constant', constant_values=(0, 1))
+        if len(d) < 20:
+            d = np.pad(d, (0, 20-len(d)), 'constant', constant_values=(0, 1))
+        elif len(d) > 20:
+            d = d[:20]
         else:
             print(len(d))
         if class_tot[label] < labeled_num:

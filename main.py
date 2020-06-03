@@ -13,7 +13,7 @@ import helpers
 
 CUDA = True and torch.cuda.is_available()
 VOCAB_SIZE = 5000
-MAX_SEQ_LEN = 210
+MAX_SEQ_LEN = 20
 START_LETTER = 0
 BATCH_SIZE = 32
 MLE_TRAIN_EPOCHS = 100
