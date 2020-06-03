@@ -10,8 +10,6 @@ import generator
 import discriminator
 import helpers
 
-from torch.autograd import Variable
-
 
 CUDA = True and torch.cuda.is_available()
 VOCAB_SIZE = 5000
@@ -166,7 +164,7 @@ if __name__ == '__main__':
     clf = discriminator.Classifier(DIS_HIDDEN_DIM, CLASS_NUM, gpu=CUDA)
 
     labeled = (labeled.tensors[0], labeled.tensors[1])
-    test = (Variable(test._data), Variable(test._labels))
+    test = (torch.tensor(test._data), torch.tensor(test._labels))
 
     if CUDA:
         oracle = oracle.cuda()
