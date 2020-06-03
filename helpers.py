@@ -140,8 +140,6 @@ def init_dataset(labeled_num):
             d = np.pad(d, (0, 20-len(d)), 'constant', constant_values=(0, 1))
         elif len(d) > 20:
             d = d[:20]
-        else:
-            print(len(d))
         if class_tot[label] < labeled_num:
             label_data.append(d)
             labels.append(label)
