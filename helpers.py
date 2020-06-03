@@ -148,6 +148,15 @@ def init_dataset(labeled_num):
         if tot >= CLASS_NUM * labeled_num:
             unlabel.append(d)
     fake_label = np.zeros(len(unlabel))
+    test_data, test_label = [], []
+    for i in range(test_dataset.__len__()):
+        label, datum = raw_dataset.__getitem__(perm[i])
+        d = datum.numpy()
+        if len(d) < 210:
+            d = np.pad(d, (0, 210-len(d)), 'constant', constant_values=(0, 1))
+        test_data.append(d)
+        test_label.append(label)
+
     return TensorDataset(torch.IntTensor(np.array(label_data)), torch.LongTensor(np.array(labels))), \
            TensorDataset(torch.IntTensor(np.array(unlabel)), torch.LongTensor(np.array(fake_label))), \
-           test_dataset, vocab
+           TensorDataset(torch.IntTensor(np.array(test_data)), torch.LongTensor(np.array(test_label))), vocab

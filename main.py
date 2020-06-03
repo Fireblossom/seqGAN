@@ -166,7 +166,7 @@ if __name__ == '__main__':
     clf = discriminator.Classifier(DIS_HIDDEN_DIM, CLASS_NUM, gpu=CUDA)
 
     labeled = (labeled.tensors[0], labeled.tensors[1])
-    test = (Variable(test._data), Variable(test._labels))
+    test = (test.tensors[0], test.tensors[1])
 
     if CUDA:
         oracle = oracle.cuda()
