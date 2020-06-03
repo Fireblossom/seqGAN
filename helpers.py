@@ -147,7 +147,7 @@ def init_dataset(labeled_num):
             labels.append(label)
             class_tot[label] += 1
             tot += 1
-        if tot >= CLASS_NUM * labeled_num:
+        if tot >= CLASS_NUM * labeled_num and len(unlabel) <= 10000:
             unlabel.append(d)
     fake_label = np.zeros(len(unlabel))
     test_data, test_label = [], []
