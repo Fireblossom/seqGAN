@@ -136,7 +136,7 @@ def train_discriminator(discriminator, dis_opt, real_data_samples, generator, or
                 loss_cls = loss_clf(cls, target)
                 loss_cls.backward()
                 dis_opt.step()
-                clf_acc = torch.sum((torch.argmax(cls))==(label)).data.item()
+                clf_acc += torch.sum((torch.argmax(cls))==(label)).data.item()
 
             total_loss /= ceil(2 * POS_NEG_SAMPLES / float(BATCH_SIZE))
             total_acc /= float(2 * POS_NEG_SAMPLES)
@@ -147,7 +147,7 @@ def train_discriminator(discriminator, dis_opt, real_data_samples, generator, or
             val_pred_clf = classfifier(feature)
             print(' average_loss = %.4f, train_acc = %.4f, train_clf_acc = %.4f, val_acc = %.4f, val_clf_acc = %.4f' % (
                 total_loss, total_acc, clf_acc, torch.sum((val_pred>0.5)==(val_target>0.5)).data.item()/200., \
-                torch.sum((torch.argmax(val_pred_clf))==(test_label)).data.item()).data.item()/len(test_label))
+                torch.sum((torch.argmax(val_pred_clf))==(test_label)).data.item()/len(test_label)))
 
 # MAIN
 if __name__ == '__main__':
