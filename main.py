@@ -126,14 +126,15 @@ def train_discriminator(discriminator, dis_opt, real_data_samples, generator, or
                         BATCH_SIZE)) / 10.) == 0:  # roughly every 10% of an epoch
                     print('.', end='')
                     sys.stdout.flush()
-
-            dis_opt.zero_grad()
-            _, feature = discriminator.batchClassify(labeled_data)
-            cls = classfifier(feature.detach())
-            loss_clf = nn.CrossEntropyLoss()
-            loss_cls = loss_clf(cls, label)
-            loss_cls.backward()
-            dis_opt.step()
+            for i in range(0, len(labeled_data), BATCH_SIZE):
+                inp, target = labeled_data[i:i+BATCH_SIZE], label[i:i+BATCH_SIZE]
+                dis_opt.zero_grad()
+                _, feature = discriminator.batchClassify(inp)
+                cls = classfifier(feature.detach())
+                loss_clf = nn.CrossEntropyLoss()
+                loss_cls = loss_clf(cls, target)
+                loss_cls.backward()
+                dis_opt.step()
 
             total_loss /= ceil(2 * POS_NEG_SAMPLES / float(BATCH_SIZE))
             total_acc /= float(2 * POS_NEG_SAMPLES)
@@ -165,7 +166,7 @@ if __name__ == '__main__':
     clf = discriminator.Classifier(DIS_HIDDEN_DIM, CLASS_NUM, gpu=CUDA)
 
     labeled = (labeled.tensors[0], labeled.tensors[1])
-    test = (test.tensors[0], test.tensors[1])
+    test = (test.tensors[0][:200], test.tensors[1][:200])
 
     if CUDA:
         oracle = oracle.cuda()
