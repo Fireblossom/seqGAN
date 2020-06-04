@@ -109,6 +109,7 @@ def train_discriminator(discriminator, dis_opt, real_data_samples, generator, or
             sys.stdout.flush()
             total_loss = 0
             total_acc = 0
+            clf_acc = 0
 
             for i in range(0, 2 * POS_NEG_SAMPLES, BATCH_SIZE):
                 inp, target = dis_inp[i:i + BATCH_SIZE], dis_target[i:i + BATCH_SIZE]
@@ -135,10 +136,11 @@ def train_discriminator(discriminator, dis_opt, real_data_samples, generator, or
                 loss_cls = loss_clf(cls, target)
                 loss_cls.backward()
                 dis_opt.step()
+                clf_acc = torch.sum((torch.argmax(cls))==(label)).data.item()
 
             total_loss /= ceil(2 * POS_NEG_SAMPLES / float(BATCH_SIZE))
             total_acc /= float(2 * POS_NEG_SAMPLES)
-            clf_acc = torch.sum((torch.argmax(cls))==(label)).data.item() / len(label)
+            clf_acc /= float(len(label))
 
             val_pred, _ = discriminator.batchClassify(val_inp)
             _, feature = discriminator.batchClassify(test_data)
