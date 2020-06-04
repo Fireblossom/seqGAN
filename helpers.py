@@ -156,6 +156,6 @@ def init_dataset(labeled_num):
         test_data.append(d)
         test_label.append(label)
 
-    return TensorDataset(torch.IntTensor(np.array(label_data)), torch.LongTensor(np.array(labels))), \
-           TensorDataset(torch.IntTensor(np.array(unlabel)), torch.LongTensor(np.array(fake_label))), \
-           TensorDataset(torch.IntTensor(np.array(test_data)), torch.LongTensor(np.array(test_label))), vocab
+    return TensorDataset(torch.LongTensor(np.array(label_data)), torch.LongTensor(np.array(labels))), \
+           TensorDataset(torch.LongTensor(np.array(unlabel)), torch.LongTensor(np.array(fake_label))), \
+           TensorDataset(torch.LongTensor(np.array(test_data)), torch.LongTensor(np.array(test_label))), vocab

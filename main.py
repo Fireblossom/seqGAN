@@ -153,6 +153,7 @@ if __name__ == '__main__':
     VOCAB_SIZE = len(vocab)
     oracle = generator.Generator(GEN_EMBEDDING_DIM, GEN_HIDDEN_DIM, VOCAB_SIZE, MAX_SEQ_LEN, gpu=CUDA, oracle_init=True)
     oracle_samples = unlabeled.tensors[0].to(dtype=torch.int)
+    print(oracle_samples.type())
     POS_NEG_SAMPLES = len(oracle_samples)
     #oracle.load_state_dict(torch.load(oracle_state_dict_path))
     #oracle_samples = torch.load(oracle_samples_path).type(torch.LongTensor)
@@ -179,7 +180,7 @@ if __name__ == '__main__':
     # GENERATOR MLE TRAINING
     print('Starting Generator MLE Training...')
     gen_optimizer = optim.Adam(gen.parameters(), lr=1e-2)
-    train_generator_MLE(gen, gen_optimizer, oracle, oracle_samples, MLE_TRAIN_EPOCHS)
+    #train_generator_MLE(gen, gen_optimizer, oracle, oracle_samples, MLE_TRAIN_EPOCHS)
 
     # torch.save(gen.state_dict(), pretrained_gen_path)
     # gen.load_state_dict(torch.load(pretrained_gen_path))
