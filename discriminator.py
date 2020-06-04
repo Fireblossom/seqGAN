@@ -77,8 +77,9 @@ class Classifier(nn.Module):
         self.gpu = gpu
 
         self.feature2class = nn.Linear(feature_dim, class_num)
+        self.softmax = nn.Softmax(dim=1)
 
     def forward(self, feature):
         c = self.feature2class(feature)
-        c = torch.softmax(c)
+        c = self.softmax(c)
         return c
